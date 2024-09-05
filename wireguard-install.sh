@@ -486,7 +486,7 @@ function uninstallWg() {
 
 function manageMenu() {
 	echo "Chào mừng bạn đến với WireGuard-install!"
-	echo "Kho lưu trữ git có sẵn tại: https://github.com/angristan/wireguard-install"
+	echo "Kho lưu trữ git có sẵn tại: https://github.com/ThemeWayOut/Wireguard-Install"
 	echo ""
 	echo "Có vẻ như WireGuard đã được cài đặt."
 	echo ""
