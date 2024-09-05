@@ -3,10 +3,9 @@
 ![Lint](https://github.com/angristan/wireguard-install/workflows/Lint/badge.svg)
 [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/angristan)
 
-**This project is a bash script that aims to setup a [WireGuard](https://www.wireguard.com/) VPN on a Linux server, as easily as possible!**
+** Dự án này là một script bash nhằm thiết lập một VPN [WireGuard](https://www.wireguard.com/) trên máy chủ Linux, một cách dễ dàng nhất có thể!
 
-WireGuard is a point-to-point VPN that can be used in different ways. Here, we mean a VPN as in: the client will forward all its traffic through an encrypted tunnel to the server.
-The server will apply NAT to the client's traffic so it will appear as if the client is browsing the web with the server's IP.
+** WireGuard là một VPN điểm-đến-điểm có thể được sử dụng theo nhiều cách khác nhau. Ở đây, chúng tôi hiểu VPN là: khách hàng sẽ chuyển tiếp tất cả lưu lượng của mình qua một đường hầm mã hóa đến máy chủ. Máy chủ sẽ áp dụng NAT cho lưu lượng của khách hàng để nó có vẻ như khách hàng đang duyệt web với IP của máy chủ.
 
 The script supports both IPv4 and IPv6. Please check the [issues](https://github.com/angristan/wireguard-install/issues) for ongoing development, bugs and planned features! You might also want to check the [discussions](https://github.com/angristan/wireguard-install/discussions) for help.
 
@@ -33,6 +32,9 @@ Download and execute the script. Answer the questions asked by the script and it
 curl -O https://raw.githubusercontent.com/ThemeWayOut/Wireguard-Install/master/wireguard-install.sh
 chmod +x wireguard-install.sh
 ./wireguard-install.sh
+```
+```bash
+AllowedIPs = 116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32
 ```
 
 It will install WireGuard (kernel module and tools) on the server, configure it, create a systemd service and a client configuration file.
