@@ -4,7 +4,7 @@
 
 ** WireGuard là một VPN điểm-đến-điểm có thể được sử dụng theo nhiều cách khác nhau. Ở đây, chúng tôi hiểu VPN là: khách hàng sẽ chuyển tiếp tất cả lưu lượng của mình qua một đường hầm mã hóa đến máy chủ. Máy chủ sẽ áp dụng NAT cho lưu lượng của khách hàng để nó có vẻ như khách hàng đang duyệt web với IP của máy chủ.
 
-Cách sử dụng
+# Cách sử dụng
 
 Tải xuống và thực thi script. Trả lời các câu hỏi mà script đưa ra và nó sẽ tự lo phần còn lại.
 
