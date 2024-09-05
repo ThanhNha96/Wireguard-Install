@@ -13,7 +13,7 @@ curl -O https://raw.githubusercontent.com/ThemeWayOut/Wireguard-Install/master/w
 chmod +x wireguard-install.sh
 ./wireguard-install.sh
 ```
-[AllowedIPs] MapleStory Korea
+- [AllowedIPs] MapleStory Korea:
 ```bash
 116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32
 ```
