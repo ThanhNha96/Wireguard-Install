@@ -10,23 +10,23 @@ NC='\033[0m'
 
 function isRoot() {
 	if [ "${EUID}" -ne 0 ]; then
-		echo "You need to run this script as root"
+		echo "Bạn cần chạy tập lệnh này với tư cách là root"
 		exit 1
 	fi
 }
 
 function checkVirt() {
 	if [ "$(systemd-detect-virt)" == "openvz" ]; then
-		echo "OpenVZ is not supported"
+		echo "OpenVZ không được hỗ trợ"
 		exit 1
 	fi
 
 	if [ "$(systemd-detect-virt)" == "lxc" ]; then
-		echo "LXC is not supported (yet)."
-		echo "WireGuard can technically run in an LXC container,"
-		echo "but the kernel module has to be installed on the host,"
-		echo "the container has to be run with some specific parameters"
-		echo "and only the tools need to be installed in the container."
+		echo "LXC không được hỗ trợ (chưa)."
+		echo "WireGuard có thể chạy trong một container LXC,"
+		echo "nhưng mô-đun kernel phải được cài đặt trên máy chủ,"
+		echo "container phải được chạy với một số tham số cụ thể"
+		echo "và chỉ cần cài đặt các công cụ trong container."
 		exit 1
 	fi
 }
@@ -36,24 +36,24 @@ function checkOS() {
 	OS="${ID}"
 	if [[ ${OS} == "debian" || ${OS} == "raspbian" ]]; then
 		if [[ ${VERSION_ID} -lt 10 ]]; then
-			echo "Your version of Debian (${VERSION_ID}) is not supported. Please use Debian 10 Buster or later"
+			echo "Phiên bản Debian của bạn (${VERSION_ID}) không được hỗ trợ. Vui lòng sử dụng Debian 10 Buster hoặc mới hơn."
 			exit 1
 		fi
-		OS=debian # overwrite if raspbian
+		OS=debian # ghi đè nếu là raspbian
 	elif [[ ${OS} == "ubuntu" ]]; then
 		RELEASE_YEAR=$(echo "${VERSION_ID}" | cut -d'.' -f1)
 		if [[ ${RELEASE_YEAR} -lt 18 ]]; then
-			echo "Your version of Ubuntu (${VERSION_ID}) is not supported. Please use Ubuntu 18.04 or later"
+			echo "Phiên bản Ubuntu của bạn (${VERSION_ID}) không được hỗ trợ. Vui lòng sử dụng Ubuntu 18.04 hoặc mới hơn."
 			exit 1
 		fi
 	elif [[ ${OS} == "fedora" ]]; then
 		if [[ ${VERSION_ID} -lt 32 ]]; then
-			echo "Your version of Fedora (${VERSION_ID}) is not supported. Please use Fedora 32 or later"
+			echo "Phiên bản Fedora của bạn (${VERSION_ID}) không được hỗ trợ. Vui lòng sử dụng Fedora 32 hoặc mới hơn."
 			exit 1
 		fi
 	elif [[ ${OS} == 'centos' ]] || [[ ${OS} == 'almalinux' ]] || [[ ${OS} == 'rocky' ]]; then
 		if [[ ${VERSION_ID} == 7* ]]; then
-			echo "Your version of CentOS (${VERSION_ID}) is not supported. Please use CentOS 8 or later"
+			echo "Phiên bản CentOS của bạn (${VERSION_ID}) không được hỗ trợ. Vui lòng sử dụng CentOS 8 hoặc mới hơn."
 			exit 1
 		fi
 	elif [[ -e /etc/oracle-release ]]; then
@@ -62,7 +62,7 @@ function checkOS() {
 	elif [[ -e /etc/arch-release ]]; then
 		OS=arch
 	else
-		echo "Looks like you aren't running this installer on a Debian, Ubuntu, Fedora, CentOS, AlmaLinux, Oracle or Arch Linux system"
+		echo "Có vẻ như bạn không đang chạy trình cài đặt này trên hệ thống Debian, Ubuntu, Fedora, CentOS, AlmaLinux, Oracle hoặc Arch Linux."
 		exit 1
 	fi
 }
@@ -71,24 +71,24 @@ function getHomeDirForClient() {
 	local CLIENT_NAME=$1
 
 	if [ -z "${CLIENT_NAME}" ]; then
-		echo "Error: getHomeDirForClient() requires a client name as argument"
+		echo "Lỗi: getHomeDirForClient() yêu cầu một tên khách hàng làm tham số"
 		exit 1
 	fi
 
-	# Home directory of the user, where the client configuration will be written
+	# Thư mục chính của người dùng, nơi cấu hình của khách hàng sẽ được ghi
 	if [ -e "/home/${CLIENT_NAME}" ]; then
-		# if $1 is a user name
+		# nếu $1 là tên người dùng
 		HOME_DIR="/home/${CLIENT_NAME}"
 	elif [ "${SUDO_USER}" ]; then
-		# if not, use SUDO_USER
+		# nếu không, sử dụng SUDO_USER
 		if [ "${SUDO_USER}" == "root" ]; then
-			# If running sudo as root
+			# Nếu chạy sudo với quyền root
 			HOME_DIR="/root"
 		else
 			HOME_DIR="/home/${SUDO_USER}"
 		fi
 	else
-		# if not SUDO_USER, use /root
+		# nếu không có SUDO_USER, sử dụng /root
 		HOME_DIR="/root"
 	fi
 
@@ -101,30 +101,31 @@ function initialCheck() {
 	checkOS
 }
 
+
 function installQuestions() {
-	echo "Welcome to the WireGuard installer!"
-	echo "The git repository is available at: https://github.com/angristan/wireguard-install"
+	echo "Chào mừng bạn đến với trình cài đặt WireGuard!"
+	echo "Kho lưu trữ git có sẵn tại: https://github.com/angristan/wireguard-install"
 	echo ""
-	echo "I need to ask you a few questions before starting the setup."
-	echo "You can keep the default options and just press enter if you are ok with them."
+	echo "Tôi cần hỏi bạn một vài câu hỏi trước khi bắt đầu cài đặt."
+	echo "Bạn có thể giữ các tùy chọn mặc định và chỉ cần nhấn enter nếu bạn đồng ý với chúng."
 	echo ""
 
-	# Detect public IPv4 or IPv6 address and pre-fill for the user
+	# Phát hiện địa chỉ IPv4 hoặc IPv6 công cộng và tự động điền cho người dùng
 	SERVER_PUB_IP=$(ip -4 addr | sed -ne 's|^.* inet \([^/]*\)/.* scope global.*$|\1|p' | awk '{print $1}' | head -1)
 	if [[ -z ${SERVER_PUB_IP} ]]; then
-		# Detect public IPv6 address
+		# Phát hiện địa chỉ IPv6 công cộng
 		SERVER_PUB_IP=$(ip -6 addr | sed -ne 's|^.* inet6 \([^/]*\)/.* scope global.*$|\1|p' | head -1)
 	fi
-	read -rp "IPv4 or IPv6 public address: " -e -i "${SERVER_PUB_IP}" SERVER_PUB_IP
+	read -rp "Địa chỉ công cộng IPv4 hoặc IPv6: " -e -i "${SERVER_PUB_IP}" SERVER_PUB_IP
 
-	# Detect public interface and pre-fill for the user
+	# Phát hiện giao diện công cộng và tự động điền cho người dùng
 	SERVER_NIC="$(ip -4 route ls | grep default | grep -Po '(?<=dev )(\S+)' | head -1)"
 	until [[ ${SERVER_PUB_NIC} =~ ^[a-zA-Z0-9_]+$ ]]; do
-		read -rp "Public interface: " -e -i "${SERVER_NIC}" SERVER_PUB_NIC
+		read -rp "Giao diện công cộng: " -e -i "${SERVER_NIC}" SERVER_PUB_NIC
 	done
 
 	until [[ ${SERVER_WG_NIC} =~ ^[a-zA-Z0-9_]+$ && ${#SERVER_WG_NIC} -lt 16 ]]; do
-		read -rp "WireGuard interface name: " -e -i wg0 SERVER_WG_NIC
+		read -rp "Tên giao diện WireGuard: " -e -i wg0 SERVER_WG_NIC
 	done
 
 	until [[ ${SERVER_WG_IPV4} =~ ^([0-9]{1,3}\.){3} ]]; do
@@ -135,42 +136,42 @@ function installQuestions() {
 		read -rp "Server WireGuard IPv6: " -e -i fd42:42:42::1 SERVER_WG_IPV6
 	done
 
-	# Generate random number within private ports range
+	# Tạo số ngẫu nhiên trong khoảng cổng riêng
 	RANDOM_PORT=$(shuf -i49152-65535 -n1)
 	until [[ ${SERVER_PORT} =~ ^[0-9]+$ ]] && [ "${SERVER_PORT}" -ge 1 ] && [ "${SERVER_PORT}" -le 65535 ]; do
-		read -rp "Server WireGuard port [1-65535]: " -e -i "${RANDOM_PORT}" SERVER_PORT
+		read -rp "Cổng WireGuard của server [1-65535]: " -e -i "${RANDOM_PORT}" SERVER_PORT
 	done
 
-	# Adguard DNS by default
+	# DNS Adguard mặc định
 	until [[ ${CLIENT_DNS_1} =~ ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]]; do
-		read -rp "First DNS resolver to use for the clients: " -e -i 1.1.1.1 CLIENT_DNS_1
+		read -rp "Trình phân giải DNS đầu tiên để sử dụng cho các khách hàng: " -e -i 1.1.1.1 CLIENT_DNS_1
 	done
 	until [[ ${CLIENT_DNS_2} =~ ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]]; do
-		read -rp "Second DNS resolver to use for the clients (optional): " -e -i 1.0.0.1 CLIENT_DNS_2
+		read -rp "Trình phân giải DNS thứ hai để sử dụng cho các khách hàng (tùy chọn): " -e -i 1.0.0.1 CLIENT_DNS_2
 		if [[ ${CLIENT_DNS_2} == "" ]]; then
 			CLIENT_DNS_2="${CLIENT_DNS_1}"
 		fi
 	done
 
 	until [[ ${ALLOWED_IPS} =~ ^.+$ ]]; do
-		echo -e "\nWireGuard uses a parameter called AllowedIPs to determine what is routed over the VPN."
-		read -rp "Allowed IPs list for generated clients (leave default to route everything): " -e -i '0.0.0.0/0,::/0' ALLOWED_IPS
+		echo -e "\nWireGuard sử dụng một tham số gọi là AllowedIPs để xác định những gì được định tuyến qua VPN."
+		read -rp "Danh sách IP được phép cho các khách hàng được tạo (để mặc định để định tuyến mọi thứ): " -e -i '0.0.0.0/0,::/0' ALLOWED_IPS
 		if [[ ${ALLOWED_IPS} == "" ]]; then
 			ALLOWED_IPS="0.0.0.0/0,::/0"
 		fi
 	done
 
 	echo ""
-	echo "Okay, that was all I needed. We are ready to setup your WireGuard server now."
-	echo "You will be able to generate a client at the end of the installation."
-	read -n1 -r -p "Press any key to continue..."
+	echo "Được rồi, đó là tất cả những gì tôi cần. Chúng ta đã sẵn sàng để thiết lập server WireGuard của bạn."
+	echo "Bạn sẽ có thể tạo một khách hàng vào cuối quá trình cài đặt."
+	read -n1 -r -p "Nhấn phím bất kỳ để tiếp tục..."
 }
 
 function installWireGuard() {
-	# Run setup questions first
+	# Chạy các câu hỏi thiết lập trước
 	installQuestions
 
-	# Install WireGuard tools and module
+	# Cài đặt công cụ và mô-đun WireGuard
 	if [[ ${OS} == 'ubuntu' ]] || [[ ${OS} == 'debian' && ${VERSION_ID} -gt 10 ]]; then
 		apt-get update
 		apt-get install -y wireguard iptables resolvconf qrencode
@@ -193,7 +194,7 @@ function installWireGuard() {
 		if [[ ${VERSION_ID} == 8* ]]; then
 			yum install -y epel-release elrepo-release
 			yum install -y kmod-wireguard
-			yum install -y qrencode # not available on release 9
+			yum install -y qrencode # không có trên phiên bản 9
 		fi
 		yum install -y wireguard-tools iptables
 	elif [[ ${OS} == 'oracle' ]]; then
@@ -206,7 +207,7 @@ function installWireGuard() {
 		pacman -S --needed --noconfirm wireguard-tools qrencode
 	fi
 
-	# Make sure the directory exists (this does not seem the be the case on fedora)
+	# Đảm bảo thư mục tồn tại (điều này có vẻ không đúng trên fedora)
 	mkdir /etc/wireguard >/dev/null 2>&1
 
 	chmod 600 -R /etc/wireguard/
@@ -214,7 +215,7 @@ function installWireGuard() {
 	SERVER_PRIV_KEY=$(wg genkey)
 	SERVER_PUB_KEY=$(echo "${SERVER_PRIV_KEY}" | wg pubkey)
 
-	# Save WireGuard settings
+	# Lưu cài đặt WireGuard
 	echo "SERVER_PUB_IP=${SERVER_PUB_IP}
 SERVER_PUB_NIC=${SERVER_PUB_NIC}
 SERVER_WG_NIC=${SERVER_WG_NIC}
@@ -227,7 +228,7 @@ CLIENT_DNS_1=${CLIENT_DNS_1}
 CLIENT_DNS_2=${CLIENT_DNS_2}
 ALLOWED_IPS=${ALLOWED_IPS}" >/etc/wireguard/params
 
-	# Add server interface
+	# Thêm giao diện server
 	echo "[Interface]
 Address = ${SERVER_WG_IPV4}/24,${SERVER_WG_IPV6}/64
 ListenPort = ${SERVER_PORT}
@@ -253,7 +254,7 @@ PostDown = ip6tables -D FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
 PostDown = ip6tables -t nat -D POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 	fi
 
-	# Enable routing on the server
+	# Kích hoạt định tuyến trên server
 	echo "net.ipv4.ip_forward = 1
 net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
 
@@ -263,26 +264,26 @@ net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
 	systemctl enable "wg-quick@${SERVER_WG_NIC}"
 
 	newClient
-	echo -e "${GREEN}If you want to add more clients, you simply need to run this script another time!${NC}"
+	echo -e "${GREEN}Nếu bạn muốn thêm nhiều khách hàng hơn, bạn chỉ cần chạy lại script này một lần nữa!${NC}"
 
-	# Check if WireGuard is running
+	# Kiểm tra xem WireGuard có đang chạy không
 	systemctl is-active --quiet "wg-quick@${SERVER_WG_NIC}"
 	WG_RUNNING=$?
 
-	# WireGuard might not work if we updated the kernel. Tell the user to reboot
+	# WireGuard có thể không hoạt động nếu chúng ta đã cập nhật kernel. Thông báo cho người dùng khởi động lại
 	if [[ ${WG_RUNNING} -ne 0 ]]; then
-		echo -e "\n${RED}WARNING: WireGuard does not seem to be running.${NC}"
-		echo -e "${ORANGE}You can check if WireGuard is running with: systemctl status wg-quick@${SERVER_WG_NIC}${NC}"
-		echo -e "${ORANGE}If you get something like \"Cannot find device ${SERVER_WG_NIC}\", please reboot!${NC}"
-	else # WireGuard is running
-		echo -e "\n${GREEN}WireGuard is running.${NC}"
-		echo -e "${GREEN}You can check the status of WireGuard with: systemctl status wg-quick@${SERVER_WG_NIC}\n\n${NC}"
-		echo -e "${ORANGE}If you don't have internet connectivity from your client, try to reboot the server.${NC}"
+		echo -e "\n${RED}CẢNH BÁO: WireGuard dường như không đang chạy.${NC}"
+		echo -e "${ORANGE}Bạn có thể kiểm tra xem WireGuard có đang chạy không bằng: systemctl status wg-quick@${SERVER_WG_NIC}${NC}"
+		echo -e "${ORANGE}Nếu bạn nhận được thông báo như \"Không tìm thấy thiết bị ${SERVER_WG_NIC}\", vui lòng khởi động lại!${NC}"
+	else # WireGuard đang chạy
+		echo -e "\n${GREEN}WireGuard đang chạy.${NC}"
+		echo -e "${GREEN}Bạn có thể kiểm tra trạng thái của WireGuard bằng: systemctl status wg-quick@${SERVER_WG_NIC}\n\n${NC}"
+		echo -e "${ORANGE}Nếu bạn không có kết nối internet từ khách hàng, hãy thử khởi động lại server.${NC}"
 	fi
 }
 
 function newClient() {
-	# If SERVER_PUB_IP is IPv6, add brackets if missing
+	# Nếu SERVER_PUB_IP là IPv6, thêm dấu ngoặc nếu thiếu
 	if [[ ${SERVER_PUB_IP} =~ .*:.* ]]; then
 		if [[ ${SERVER_PUB_IP} != *"["* ]] || [[ ${SERVER_PUB_IP} != *"]"* ]]; then
 			SERVER_PUB_IP="[${SERVER_PUB_IP}]"
@@ -291,17 +292,17 @@ function newClient() {
 	ENDPOINT="${SERVER_PUB_IP}:${SERVER_PORT}"
 
 	echo ""
-	echo "Client configuration"
+	echo "Cấu hình khách hàng"
 	echo ""
-	echo "The client name must consist of alphanumeric character(s). It may also include underscores or dashes and can't exceed 15 chars."
+	echo "Tên khách hàng phải bao gồm các ký tự chữ cái và số. Nó cũng có thể bao gồm dấu gạch dưới hoặc dấu gạch ngang và không được vượt quá 15 ký tự."
 
 	until [[ ${CLIENT_NAME} =~ ^[a-zA-Z0-9_-]+$ && ${CLIENT_EXISTS} == '0' && ${#CLIENT_NAME} -lt 16 ]]; do
-		read -rp "Client name: " -e CLIENT_NAME
-		CLIENT_EXISTS=$(grep -c -E "^### Client ${CLIENT_NAME}\$" "/etc/wireguard/${SERVER_WG_NIC}.conf")
+		read -rp "Tên khách hàng: " -e CLIENT_NAME
+		CLIENT_EXISTS=$(grep -c -E "^### Khách hàng ${CLIENT_NAME}\$" "/etc/wireguard/${SERVER_WG_NIC}.conf")
 
 		if [[ ${CLIENT_EXISTS} != 0 ]]; then
 			echo ""
-			echo -e "${ORANGE}A client with the specified name was already created, please choose another name.${NC}"
+			echo -e "${ORANGE}Một khách hàng với tên đã chỉ định đã được tạo, vui lòng chọn tên khác.${NC}"
 			echo ""
 		fi
 	done
@@ -315,44 +316,44 @@ function newClient() {
 
 	if [[ ${DOT_EXISTS} == '1' ]]; then
 		echo ""
-		echo "The subnet configured supports only 253 clients."
+		echo "Subnet đã cấu hình chỉ hỗ trợ tối đa 253 khách hàng."
 		exit 1
 	fi
 
 	BASE_IP=$(echo "$SERVER_WG_IPV4" | awk -F '.' '{ print $1"."$2"."$3 }')
 	until [[ ${IPV4_EXISTS} == '0' ]]; do
-		read -rp "Client WireGuard IPv4: ${BASE_IP}." -e -i "${DOT_IP}" DOT_IP
+		read -rp "IPv4 WireGuard của khách hàng: ${BASE_IP}." -e -i "${DOT_IP}" DOT_IP
 		CLIENT_WG_IPV4="${BASE_IP}.${DOT_IP}"
 		IPV4_EXISTS=$(grep -c "$CLIENT_WG_IPV4/32" "/etc/wireguard/${SERVER_WG_NIC}.conf")
 
 		if [[ ${IPV4_EXISTS} != 0 ]]; then
 			echo ""
-			echo -e "${ORANGE}A client with the specified IPv4 was already created, please choose another IPv4.${NC}"
+			echo -e "${ORANGE}Một khách hàng với IPv4 đã chỉ định đã được tạo, vui lòng chọn IPv4 khác.${NC}"
 			echo ""
 		fi
 	done
 
 	BASE_IP=$(echo "$SERVER_WG_IPV6" | awk -F '::' '{ print $1 }')
 	until [[ ${IPV6_EXISTS} == '0' ]]; do
-		read -rp "Client WireGuard IPv6: ${BASE_IP}::" -e -i "${DOT_IP}" DOT_IP
+		read -rp "IPv6 WireGuard của khách hàng: ${BASE_IP}::" -e -i "${DOT_IP}" DOT_IP
 		CLIENT_WG_IPV6="${BASE_IP}::${DOT_IP}"
 		IPV6_EXISTS=$(grep -c "${CLIENT_WG_IPV6}/128" "/etc/wireguard/${SERVER_WG_NIC}.conf")
 
 		if [[ ${IPV6_EXISTS} != 0 ]]; then
 			echo ""
-			echo -e "${ORANGE}A client with the specified IPv6 was already created, please choose another IPv6.${NC}"
+			echo -e "${ORANGE}Một khách hàng với IPv6 đã chỉ định đã được tạo, vui lòng chọn IPv6 khác.${NC}"
 			echo ""
 		fi
 	done
 
-	# Generate key pair for the client
+	# Tạo cặp khóa cho khách hàng
 	CLIENT_PRIV_KEY=$(wg genkey)
 	CLIENT_PUB_KEY=$(echo "${CLIENT_PRIV_KEY}" | wg pubkey)
 	CLIENT_PRE_SHARED_KEY=$(wg genpsk)
 
 	HOME_DIR=$(getHomeDirForClient "${CLIENT_NAME}")
 
-	# Create client file and add the server as a peer
+	# Tạo tệp khách hàng và thêm server làm peer
 	echo "[Interface]
 PrivateKey = ${CLIENT_PRIV_KEY}
 Address = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128
@@ -364,8 +365,8 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
 AllowedIPs = ${ALLOWED_IPS}" >"${HOME_DIR}/${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf"
 
-	# Add the client as a peer to the server
-	echo -e "\n### Client ${CLIENT_NAME}
+	# Thêm khách hàng làm peer vào server
+	echo -e "\n### Khách hàng ${CLIENT_NAME}
 [Peer]
 PublicKey = ${CLIENT_PUB_KEY}
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
@@ -373,21 +374,21 @@ AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SER
 
 	wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 
-	# Generate QR code if qrencode is installed
+	# Tạo mã QR nếu qrencode đã được cài đặt
 	if command -v qrencode &>/dev/null; then
-		echo -e "${GREEN}\nHere is your client config file as a QR Code:\n${NC}"
+		echo -e "${GREEN}\nĐây là tệp cấu hình khách hàng của bạn dưới dạng mã QR:\n${NC}"
 		qrencode -t ansiutf8 -l L <"${HOME_DIR}/${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf"
 		echo ""
 	fi
 
-	echo -e "${GREEN}Your client config file is in ${HOME_DIR}/${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf${NC}"
+	echo -e "${GREEN}Tệp cấu hình khách hàng của bạn nằm trong ${HOME_DIR}/${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf${NC}"
 }
 
 function listClients() {
 	NUMBER_OF_CLIENTS=$(grep -c -E "^### Client" "/etc/wireguard/${SERVER_WG_NIC}.conf")
 	if [[ ${NUMBER_OF_CLIENTS} -eq 0 ]]; then
 		echo ""
-		echo "You have no existing clients!"
+		echo "Bạn không có khách hàng nào tồn tại!"
 		exit 1
 	fi
 
@@ -398,40 +399,40 @@ function revokeClient() {
 	NUMBER_OF_CLIENTS=$(grep -c -E "^### Client" "/etc/wireguard/${SERVER_WG_NIC}.conf")
 	if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
 		echo ""
-		echo "You have no existing clients!"
+		echo "Bạn không có khách hàng nào tồn tại!"
 		exit 1
 	fi
 
 	echo ""
-	echo "Select the existing client you want to revoke"
+	echo "Chọn khách hàng hiện có mà bạn muốn thu hồi"
 	grep -E "^### Client" "/etc/wireguard/${SERVER_WG_NIC}.conf" | cut -d ' ' -f 3 | nl -s ') '
 	until [[ ${CLIENT_NUMBER} -ge 1 && ${CLIENT_NUMBER} -le ${NUMBER_OF_CLIENTS} ]]; do
 		if [[ ${CLIENT_NUMBER} == '1' ]]; then
-			read -rp "Select one client [1]: " CLIENT_NUMBER
+			read -rp "Chọn một khách hàng [1]: " CLIENT_NUMBER
 		else
-			read -rp "Select one client [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
+			read -rp "Chọn một khách hàng [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 		fi
 	done
 
-	# match the selected number to a client name
+	# Khớp số đã chọn với tên khách hàng
 	CLIENT_NAME=$(grep -E "^### Client" "/etc/wireguard/${SERVER_WG_NIC}.conf" | cut -d ' ' -f 3 | sed -n "${CLIENT_NUMBER}"p)
 
-	# remove [Peer] block matching $CLIENT_NAME
+	# Xóa khối [Peer] khớp với $CLIENT_NAME
 	sed -i "/^### Client ${CLIENT_NAME}\$/,/^$/d" "/etc/wireguard/${SERVER_WG_NIC}.conf"
 
-	# remove generated client file
+	# Xóa tệp khách hàng đã tạo
 	HOME_DIR=$(getHomeDirForClient "${CLIENT_NAME}")
 	rm -f "${HOME_DIR}/${SERVER_WG_NIC}-client-${CLIENT_NAME}.conf"
 
-	# restart wireguard to apply changes
+	# Khởi động lại wireguard để áp dụng thay đổi
 	wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 }
 
 function uninstallWg() {
 	echo ""
-	echo -e "\n${RED}WARNING: This will uninstall WireGuard and remove all the configuration files!${NC}"
-	echo -e "${ORANGE}Please backup the /etc/wireguard directory if you want to keep your configuration files.\n${NC}"
-	read -rp "Do you really want to remove WireGuard? [y/n]: " -e REMOVE
+	echo -e "\n${RED}CẢNH BÁO: Điều này sẽ gỡ cài đặt WireGuard và xóa tất cả các tệp cấu hình!${NC}"
+	echo -e "${ORANGE}Vui lòng sao lưu thư mục /etc/wireguard nếu bạn muốn giữ các tệp cấu hình của mình.\n${NC}"
+	read -rp "Bạn có thực sự muốn gỡ cài đặt WireGuard không? [y/n]: " -e REMOVE
 	REMOVE=${REMOVE:-n}
 	if [[ $REMOVE == 'y' ]]; then
 		checkOS
@@ -463,40 +464,40 @@ function uninstallWg() {
 		rm -rf /etc/wireguard
 		rm -f /etc/sysctl.d/wg.conf
 
-		# Reload sysctl
+		# Tải lại sysctl
 		sysctl --system
 
-		# Check if WireGuard is running
+		# Kiểm tra xem WireGuard có đang chạy không
 		systemctl is-active --quiet "wg-quick@${SERVER_WG_NIC}"
 		WG_RUNNING=$?
 
 		if [[ ${WG_RUNNING} -eq 0 ]]; then
-			echo "WireGuard failed to uninstall properly."
+			echo "WireGuard đã không gỡ cài đặt thành công."
 			exit 1
 		else
-			echo "WireGuard uninstalled successfully."
+			echo "WireGuard đã gỡ cài đặt thành công."
 			exit 0
 		fi
 	else
 		echo ""
-		echo "Removal aborted!"
+		echo "Gỡ cài đặt bị hủy!"
 	fi
 }
 
 function manageMenu() {
-	echo "Welcome to WireGuard-install!"
-	echo "The git repository is available at: https://github.com/angristan/wireguard-install"
+	echo "Chào mừng bạn đến với WireGuard-install!"
+	echo "Kho lưu trữ git có sẵn tại: https://github.com/angristan/wireguard-install"
 	echo ""
-	echo "It looks like WireGuard is already installed."
+	echo "Có vẻ như WireGuard đã được cài đặt."
 	echo ""
-	echo "What do you want to do?"
-	echo "   1) Add a new user"
-	echo "   2) List all users"
-	echo "   3) Revoke existing user"
-	echo "   4) Uninstall WireGuard"
-	echo "   5) Exit"
+	echo "Bạn muốn làm gì?"
+	echo "   1) Thêm một người dùng mới"
+	echo "   2) Liệt kê tất cả người dùng"
+	echo "   3) Thu hồi người dùng hiện có"
+	echo "   4) Gỡ cài đặt WireGuard"
+	echo "   5) Thoát"
 	until [[ ${MENU_OPTION} =~ ^[1-5]$ ]]; do
-		read -rp "Select an option [1-5]: " MENU_OPTION
+		read -rp "Chọn một tùy chọn [1-5]: " MENU_OPTION
 	done
 	case "${MENU_OPTION}" in
 	1)
@@ -517,10 +518,10 @@ function manageMenu() {
 	esac
 }
 
-# Check for root, virt, OS...
+# Kiểm tra quyền root, ảo hóa, hệ điều hành...
 initialCheck
 
-# Check if WireGuard is already installed and load params
+# Kiểm tra xem WireGuard đã được cài đặt hay chưa và tải tham số
 if [[ -e /etc/wireguard/params ]]; then
 	source /etc/wireguard/params
 	manageMenu
