@@ -4,23 +4,6 @@
 
 ** WireGuard là một VPN điểm-đến-điểm có thể được sử dụng theo nhiều cách khác nhau. Ở đây, chúng tôi hiểu VPN là: khách hàng sẽ chuyển tiếp tất cả lưu lượng của mình qua một đường hầm mã hóa đến máy chủ. Máy chủ sẽ áp dụng NAT cho lưu lượng của khách hàng để nó có vẻ như khách hàng đang duyệt web với IP của máy chủ.
 
-Script hỗ trợ cả IPv4 và IPv6. Vui lòng kiểm tra các [vấn đề](https://github.com/angristan/wireguard-install/issues) để biết thông tin phát triển đang diễn ra, lỗi và các tính năng dự kiến! Bạn cũng có thể muốn kiểm tra các [thảo luận](https://github.com/angristan/wireguard-install/discussions) để được giúp đỡ.
-
-WireGuard không phù hợp với môi trường của bạn? Hãy kiểm tra [openvpn-install](https://github.com/angristan/openvpn-install).
-
-## Requirements
-
-Supported distributions:
-
-- AlmaLinux >= 8
-- Arch Linux
-- CentOS Stream >= 8
-- Debian >= 10
-- Fedora >= 32
-- Oracle Linux
-- Rocky Linux >= 8
-- Ubuntu >= 18.04
-
 Cách sử dụng
 
 Tải xuống và thực thi script. Trả lời các câu hỏi mà script đưa ra và nó sẽ tự lo phần còn lại.
@@ -30,8 +13,9 @@ curl -O https://raw.githubusercontent.com/ThemeWayOut/Wireguard-Install/master/w
 chmod +x wireguard-install.sh
 ./wireguard-install.sh
 ```
+[AllowedIPs] MapleStory Korea
 ```bash
-AllowedIPs = 116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32
+116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32
 ```
 
 Nó sẽ cài đặt WireGuard (module kernel và công cụ) trên máy chủ, cấu hình nó, tạo một dịch vụ systemd và một tệp cấu hình cho khách hàng.
