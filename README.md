@@ -1,7 +1,4 @@
-# WireGuard installer
-
-![Lint](https://github.com/angristan/wireguard-install/workflows/Lint/badge.svg)
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/angristan)
+# Cài đặt WireGuard 
 
 ** Dự án này là một script bash nhằm thiết lập một VPN [WireGuard](https://www.wireguard.com/) trên máy chủ Linux, một cách dễ dàng nhất có thể!
 
