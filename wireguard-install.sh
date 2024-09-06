@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Secure WireGuard server installer
-# https://github.com/angristan/wireguard-install
+# https://github.com/ThemeWayOut/wireguard-install
 
 RED='\033[0;31m'
 ORANGE='\033[0;33m'
@@ -104,7 +104,7 @@ function initialCheck() {
 
 function installQuestions() {
 	echo "Chào mừng bạn đến với trình cài đặt WireGuard!"
-	echo "Kho lưu trữ git có sẵn tại: https://github.com/angristan/wireguard-install"
+	echo "Kho lưu trữ git có sẵn tại: https://github.com/ThemeWayOut/wireguard-install"
 	echo ""
 	echo "Tôi cần hỏi bạn một vài câu hỏi trước khi bắt đầu cài đặt."
 	echo "Bạn có thể giữ các tùy chọn mặc định và chỉ cần nhấn enter nếu bạn đồng ý với chúng."
@@ -129,7 +129,7 @@ function installQuestions() {
 	done
 
 	until [[ ${SERVER_WG_IPV4} =~ ^([0-9]{1,3}\.){3} ]]; do
-		read -rp "Server WireGuard IPv4: " -e -i 10.66.66.1 SERVER_WG_IPV4
+		read -rp "Server WireGuard IPv4: " -e -i 192.168.1.1 SERVER_WG_IPV4
 	done
 
 	until [[ ${SERVER_WG_IPV6} =~ ^([a-f0-9]{1,4}:){3,4}: ]]; do
@@ -144,10 +144,10 @@ function installQuestions() {
 
 	# DNS Adguard mặc định
 	until [[ ${CLIENT_DNS_1} =~ ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]]; do
-		read -rp "Trình phân giải DNS đầu tiên để sử dụng cho các khách hàng: " -e -i 1.1.1.1 CLIENT_DNS_1
+		read -rp "Trình phân giải DNS đầu tiên để sử dụng cho các khách hàng: " -e -i 8.8.8.8 CLIENT_DNS_1
 	done
 	until [[ ${CLIENT_DNS_2} =~ ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]]; do
-		read -rp "Trình phân giải DNS thứ hai để sử dụng cho các khách hàng (tùy chọn): " -e -i 1.0.0.1 CLIENT_DNS_2
+		read -rp "Trình phân giải DNS thứ hai để sử dụng cho các khách hàng (tùy chọn): " -e -i 8.4.4.8 CLIENT_DNS_2
 		if [[ ${CLIENT_DNS_2} == "" ]]; then
 			CLIENT_DNS_2="${CLIENT_DNS_1}"
 		fi
@@ -157,7 +157,7 @@ function installQuestions() {
 		echo -e "\nWireGuard sử dụng một tham số gọi là AllowedIPs để xác định những gì được định tuyến qua VPN."
 		read -rp "Danh sách IP được phép cho các khách hàng được tạo (để mặc định để định tuyến mọi thứ): " -e -i '0.0.0.0/0,::/0' ALLOWED_IPS
 		if [[ ${ALLOWED_IPS} == "" ]]; then
-			ALLOWED_IPS="0.0.0.0/0,::/0"
+			ALLOWED_IPS="116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32"
 		fi
 	done
 
