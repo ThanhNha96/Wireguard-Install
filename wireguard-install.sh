@@ -157,7 +157,7 @@ function installQuestions() {
 		echo -e "\nWireGuard sử dụng một tham số gọi là AllowedIPs để xác định những gì được định tuyến qua VPN."
 		read -rp "Danh sách IP được phép cho các khách hàng được tạo (để mặc định để định tuyến mọi thứ): " -e -i '116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32' ALLOWED_IPS
 		if [[ ${ALLOWED_IPS} == "" ]]; then
-			ALLOWED_IPS="116.122.159.19/32, 175.0.0.0/8, 183.0.0.0/8, 220.0.0.0/8, 118.214.75.79/32, 203.119.73.32/32, 34.117.59.81/32"
+			ALLOWED_IPS="0.0.0.0/0"
 		fi
 	done
 
